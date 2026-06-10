@@ -1,0 +1,9 @@
+{
+  "name": "youyou-diary",
+  "version": "1.0.0",
+  "description": "悠悠日記 - 心情記錄網站",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000"
+  }
+}

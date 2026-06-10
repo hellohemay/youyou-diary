@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>悠悠日記 - 心情記錄</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #bae6fd;
+            color: #0369a1;
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: #0369a1;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+        }
+
+        .login-card h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #0369a1, #0284c7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7, #7dd3fc);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.show {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            background: #cffafe;
+            color: #0369a1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: #0284c7;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .quick-record-btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #0284c7, #7dd3fc);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .quick-record-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .week-chart {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .day-card {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .day-card.has-record {
+            background: linear-gradient(135deg, #0284c7, #7dd3fc);
+            color: white;
+        }
+
+        .day-count {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f0f9ff, #cffafe);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid #0284c7;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0284c7;
+        }
+
+        .intensity-dist {
+            margin-bottom: 12px;
+        }
+
+        .intensity-dist-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .intensity-bar {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .intensity-fill {
+            background: linear-gradient(90deg, #7dd3fc, #0284c7);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .insights {
+            background: linear-gradient(135deg, #f0f9ff, #f0f9ff);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+        }
+
+        .insight-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0369a1;
+            margin-bottom: 8px;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .intensity-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #7dd3fc, #0284c7);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-bottom: 8px;
+        }
+
+        .intensity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0284c7;
+            cursor: pointer;
+        }
+
+        .intensity-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            background: #cffafe;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .form-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #0284c7, #7dd3fc);
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .success-message {
+            background: #cffafe;
+            color: #0369a1;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .record-card {
+            background: #f0f9ff;
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 4px solid #0284c7;
+            margin-bottom: 12px;
+        }
+
+        .record-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .record-content {
+            font-size: 14px;
+            color: #0369a1;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .record-meta {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .section-divider {
+            margin: 25px 0 20px 0;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0369a1;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登入頁面 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <h2>😔 悠悠DIARY</h2>
+            <p>當悠悠來敲門時<br/>請停下來，傾聽自己</p>
+            <button class="login-btn" onclick="handleLogin()">📝 開始使用</button>
+        </div>
+    </div>
+
+    <!-- 主頁面 -->
+    <div id="mainContent" class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>😔 悠悠DIARY</h1>
+                <p>傾聽自己的聲音</p>
+            </div>
+
+            <div class="user-info">
+                <span id="userName">👤 訪客</span>
+                <button class="logout-btn" onclick="handleLogout()">登出</button>
+            </div>
+
+            <div id="successMsg" class="success-message" style="display: none;"></div>
+
+            <button class="quick-record-btn" onclick="openRecordModal()">
+                ✍️ 記錄悠悠發生了什麼
+            </button>
+
+            <!-- 本週統計 -->
+            <div class="stats-section">
+                <div class="stats-title">📊 本週的悠悠</div>
+                <div class="week-chart" id="weekChart"></div>
+            </div>
+
+            <!-- 週統計數字 -->
+            <div class="stats-section">
+                <div class="stats-title">📈 週統計</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 8px;">本週總次數</div>
+                        <div class="stat-value" id="weekTotal">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 8px;">累計記錄</div>
+                        <div class="stat-value" id="totalRecords">0</div>
+                    </div>
+                </div>
+
+                <!-- 強度分佈 -->
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 12px;">💪 強度分佈</div>
+                    <div id="intensityDistribution"></div>
+                </div>
+
+                <!-- 本週洞察 -->
+                <div class="insights">
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #0369a1;">💡 本週洞察</div>
+                    <div class="insight-item">
+                        <span>📊</span>
+                        <span id="avgIntensity">平均強度：-- /10</span>
+                    </div>
+                    <div class="insight-item">
+                        <span>📌</span>
+                        <span id="mostFrequentDay">最多記錄日期：--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近的記錄 -->
+            <div class="stats-section">
+                <div class="stats-title">📝 最近的記錄</div>
+                <div id="recordsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 記錄彈窗 -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h3 style="font-size: 20px; color: #0369a1; margin-bottom: 5px;">😔 悠悠發生了什麼？</h3>
+                <p style="font-size: 13px; color: #999;">不用擔心句子完整，只需要說出感受</p>
+            </div>
+
+            <!-- 當下記錄 -->
+            <div class="section-divider">⏰ 當下記錄</div>
+
+            <div class="form-group">
+                <label class="form-label">你現在的感受</label>
+                <textarea id="feeling" class="form-textarea" placeholder="比如：感覺自己在黑洞裡..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">💪 強度等級（1-10）</label>
+                <input type="range" id="intensity" min="1" max="10" value="5" class="intensity-slider">
+                <div class="intensity-display">
+                    <span>輕微</span>
+                    <span style="font-weight: 600; color: #0284c7;" id="intensityLabel">5 - 中度</span>
+                    <span>嚴重</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🫀 身體感受</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="bodySensation" value="疲倦/無力"> 疲倦/無力
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="bodySensation" value="頭痛/身體痛"> 頭痛/身體痛
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="bodySensation" value="緊張/想抓東西/呼吸急速"> 緊張/想抓東西
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="bodySensation" value="胸悶/身體緊繃"> 胸悶/身體緊繃
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="bodySensation" value="身體重重"> 身體重重
+                    </label>
+                </div>
+                <label class="form-label" style="margin-top: 12px;">其他身體感受（自由填寫）</label>
+                <input type="text" id="bodySensationOther" class="form-input" placeholder="如果上述選項未包含...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">📍 是什麼觸發的？（可選）</label>
+                <input type="text" id="trigger" class="form-input" placeholder="比如：工作壓力、人際關係...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">👥 與人接觸</label>
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 12px; color: #999; display: block; margin-bottom: 8px;">人數</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactPeople" value="沒有人"> 沒有人
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactPeople" value="1-2人"> 1-2人
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactPeople" value="3-5人"> 3-5人
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactPeople" value="5人以上"> 5人以上
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #999; display: block; margin-bottom: 8px;">接觸時間</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactTime" value="30分以內"> 30分以內
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactTime" value="30分-2小時"> 30分-2小時
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactTime" value="2-5小時"> 2-5小時
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="contactTime" value="5小時以上"> 5小時以上
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🎯 你現在做了什麼？</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="純紀錄"> 純紀錄
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="深呼吸/拍拍自己"> 深呼吸/拍拍自己
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="聽音樂"> 聽音樂
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="散步/運動"> 散步/運動
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="找人談話"> 找人談話
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="coping" value="睡眠"> 睡眠
+                    </label>
+                </div>
+                <label class="form-label" style="margin-top: 12px;">其他應對方式（自由填寫）</label>
+                <input type="text" id="copingOther" class="form-input" placeholder="如果上述選項未包含...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">有沒有幫助？</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="radio" name="copingHelp" value="有幫助"> 有幫助
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="copingHelp" value="沒幫助"> 沒幫助
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="copingHelp" value="不確定"> 不確定
+                    </label>
+                </div>
+            </div>
+
+            <!-- 一日反饋 -->
+            <div class="section-divider">📅 一日反饋（可選）</div>
+
+            <div class="form-group">
+                <label class="form-label">睡眠狀況</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="radio" name="sleep" value="很好"> 很好
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="sleep" value="還好"> 還好
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="sleep" value="不好"> 不好
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">今天有運動嗎？</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="radio" name="exercise" value="有"> 有
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="exercise" value="沒有"> 沒有
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">進食規律嗎？</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="radio" name="eating" value="規律"> 規律
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="eating" value="還好"> 還好
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="radio" name="eating" value="不規律"> 不規律
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button class="save-btn" onclick="saveRecord()">✓ 保存記錄</button>
+                <button class="cancel-btn" onclick="closeRecordModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 資料儲存 ==========
+        let records = JSON.parse(localStorage.getItem('youyouRecords')) || [];
+        let user = JSON.parse(localStorage.getItem('youyouUser')) || null;
+
+        // ========== 初始化 ==========
+        function init() {
+            if (user) {
+                showMainContent();
+                updateUI();
+            }
+
+            // 強度滑塊事件
+            const intensitySlider = document.getElementById('intensity');
+            if (intensitySlider) {
+                intensitySlider.addEventListener('input', updateIntensityLabel);
+            }
+
+            // 關閉彈窗事件
+            document.getElementById('recordModal').addEventListener('click', (e) => {
+                if (e.target.id === 'recordModal') {
+                    closeRecordModal();
+                }
+            });
+        }
+
+        // ========== 更新強度標籤 ==========
+        function updateIntensityLabel() {
+            const num = parseInt(document.getElementById('intensity').value);
+            let label = '';
+            if (num <= 2) label = '輕微';
+            else if (num <= 4) label = '中輕';
+            else if (num <= 6) label = '中度';
+            else if (num <= 8) label = '中重';
+            else label = '嚴重';
+            document.getElementById('intensityLabel').textContent = `${num} - ${label}`;
+        }
+
+        // ========== 登入 ==========
+        function handleLogin() {
+            user = { id: Date.now(), name: '訪客' };
+            localStorage.setItem('youyouUser', JSON.stringify(user));
+            showMainContent();
+            updateUI();
+        }
+
+        // ========== 登出 ==========
+        function handleLogout() {
+            user = null;
+            records = [];
+            localStorage.removeItem('youyouUser');
+            localStorage.removeItem('youyouRecords');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('mainContent').classList.remove('show');
+        }
+
+        // ========== 顯示主頁面 ==========
+        function showMainContent() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainContent').classList.add('show');
+            document.getElementById('userName').textContent = '👤 ' + (user ? user.name : '訪客');
+        }
+
+        // ========== 打開記錄彈窗 ==========
+        function openRecordModal() {
+            document.getElementById('recordModal').classList.add('show');
+        }
+
+        // ========== 關閉記錄彈窗 ==========
+        function closeRecordModal() {
+            document.getElementById('recordModal').classList.remove('show');
+            resetForm();
+        }
+
+        // ========== 保存記錄 ==========
+        function saveRecord() {
+            const feeling = document.getElementById('feeling').value.trim();
+            if (!feeling) {
+                alert('請輸入你的感受');
+                return;
+            }
+
+            const bodySensations = Array.from(document.querySelectorAll('.bodySensation:checked')).map(e => e.value);
+            const intensity = parseInt(document.getElementById('intensity').value);
+            const trigger = document.getElementById('trigger').value;
+            const contactPeople = document.querySelector('input[name="contactPeople"]:checked')?.value || '';
+            const contactTime = document.querySelector('input[name="contactTime"]:checked')?.value || '';
+            
+            const copings = Array.from(document.querySelectorAll('.coping:checked')).map(e => e.value);
+            const copingOther = document.getElementById('copingOther').value.trim();
+            if (copingOther) {
+                copings.push(copingOther);
+            }
+            
+            const copingHelp = document.querySelector('input[name="copingHelp"]:checked')?.value || '';
+            const sleep = document.querySelector('input[name="sleep"]:checked')?.value || '';
+            const exercise = document.querySelector('input[name="exercise"]:checked')?.value || '';
+            const eating = document.querySelector('input[name="eating"]:checked')?.value || '';
+
+            const record = {
+                id: Date.now(),
+                feeling,
+                bodySensations,
+                intensity,
+                trigger,
+                contactPeople,
+                contactTime,
+                coping: copings,
+                copingHelp,
+                sleep,
+                exercise,
+                eating,
+                timestamp: new Date().toISOString()
+            };
+
+            records.unshift(record);
+            localStorage.setItem('youyouRecords', JSON.stringify(records));
+
+            showSuccess('✓ 記錄成功！');
+            closeRecordModal();
+            updateUI();
+        }
+
+        // ========== 重置表單 ==========
+        function resetForm() {
+            document.getElementById('feeling').value = '';
+            document.getElementById('intensity').value = 5;
+            document.getElementById('trigger').value = '';
+            document.getElementById('copingOther').value = '';
+            document.getElementById('intensityLabel').textContent = '5 - 中度';
+            document.querySelectorAll('input[type="radio"]').forEach(e => e.checked = false);
+            document.querySelectorAll('input[type="checkbox"]').forEach(e => e.checked = false);
+        }
+
+        // ========== 隨機鼓勵語 ==========
+        const encouragements = [
+            '✨ 你做得很好！',
+            '💪 繼續加油！',
+            '🌟 今天又更了解自己一點',
+            '💚 記錄自己是最好的自愛',
+            '🎯 每一次都在進步',
+            '✨ 你值得被傾聽',
+            '🌈 感受會過去，你會更堅強',
+            '💫 給自己一個擁抱',
+            '🎊 太棒了！',
+            '💝 你很重要',
+            '🌸 慢慢來，別著急',
+            '✨ 你在做對的事',
+            '🎵 深呼吸，你可以的',
+            '🌙 今天的你已經很努力了',
+            '💙 傾聽自己的聲音很勇敢'
+        ];
+
+        function getRandomEncouragement() {
+            return encouragements[Math.floor(Math.random() * encouragements.length)];
+        }
+
+        // ========== 顯示成功訊息 ==========
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            const encouragement = getRandomEncouragement();
+            el.textContent = msg + ' ' + encouragement;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // ========== 更新 UI ==========
+        function updateUI() {
+            // 更新週日曆
+            const weekDates = [];
+            const weekDateObjects = [];
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                weekDates.push(date.toLocaleDateString('zh-Hant'));
+                weekDateObjects.push(new Date(date)); // 保存日期物件
+            }
+
+            const weekCounts = {};
+            weekDates.forEach(date => {
+                weekCounts[date] = records.filter(r => new Date(r.timestamp).toLocaleDateString('zh-Hant') === date).length;
+            });
+
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            let html = '';
+            weekDates.forEach((date, idx) => {
+                const count = weekCounts[date];
+                const dayName = dayNames[weekDateObjects[idx].getDay()];
+                html += `
+                    <div class="day-card ${count > 0 ? 'has-record' : ''}">
+                        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">${dayName}</div>
+                        <div class="day-count">${count || '-'}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('weekChart').innerHTML = html;
+
+            // 計算本週統計
+            const thisWeekRecords = records.filter(r => {
+                const diff = new Date() - new Date(r.timestamp);
+                return diff < 7 * 24 * 60 * 60 * 1000;
+            });
+
+            document.getElementById('weekTotal').textContent = thisWeekRecords.length;
+            document.getElementById('totalRecords').textContent = records.length;
+
+            // 強度分佈
+            const intensityDist = {};
+            [[1, 2, '輕微'], [3, 4, '中輕'], [5, 6, '中度'], [7, 8, '中重'], [9, 10, '嚴重']].forEach(([min, max, label]) => {
+                intensityDist[label] = thisWeekRecords.filter(r => r.intensity >= min && r.intensity <= max).length;
+            });
+
+            let distHtml = '';
+            const maxCount = Math.max(...Object.values(intensityDist), 1);
+            Object.entries(intensityDist).forEach(([label, count]) => {
+                const percentage = (count / maxCount) * 100;
+                distHtml += `
+                    <div class="intensity-dist">
+                        <div class="intensity-dist-label">
+                            <span>${label}</span>
+                            <span>${count}</span>
+                        </div>
+                        <div class="intensity-bar">
+                            <div class="intensity-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('intensityDistribution').innerHTML = distHtml;
+
+            // 本週洞察
+            if (thisWeekRecords.length > 0) {
+                const avgIntensity = (thisWeekRecords.reduce((sum, r) => sum + r.intensity, 0) / thisWeekRecords.length).toFixed(1);
+                const stars = '⭐'.repeat(Math.round(avgIntensity / 2));
+                document.getElementById('avgIntensity').textContent = `平均強度：${avgIntensity}/10 ${stars}`;
+
+                const dayCountMax = Math.max(...Object.values(weekCounts));
+                const maxDay = Object.entries(weekCounts).find(([, count]) => count === dayCountMax)?.[0] || '--';
+                document.getElementById('mostFrequentDay').textContent = `最多記錄日期：${maxDay}（${dayCountMax}次）`;
+            }
+
+            // 記錄列表
+            let recordsHtml = '';
+            records.slice(0, 10).forEach(record => {
+                const time = new Date(record.timestamp).toLocaleTimeString('zh-Hant', {hour: '2-digit', minute: '2-digit'});
+                let meta = `💪 強度：${record.intensity}/10`;
+                if (record.bodySensations?.length > 0) {
+                    meta += `<br/>🫀 身體：${record.bodySensations.join('、')}`;
+                }
+                if (record.trigger) {
+                    meta += `<br/>📍 觸發：${record.trigger}`;
+                }
+                if (record.contactPeople) {
+                    meta += `<br/>👥 與人：${record.contactPeople} (${record.contactTime})`;
+                }
+                if (record.coping?.length > 0) {
+                    meta += `<br/>🎯 應對：${record.coping.join('、')} ${record.copingHelp === '有幫助' ? '✓' : ''}`;
+                }
+
+                recordsHtml += `
+                    <div class="record-card">
+                        <div class="record-time">${time}</div>
+                        <div class="record-content">${record.feeling}</div>
+                        <div class="record-meta">${meta}</div>
+                    </div>
+                `;
+            });
+
+            if (records.length === 0) {
+                recordsHtml = '<p style="text-align: center; color: #999; padding: 20px;">還沒有記錄，點上面的按鈕開始吧～</p>';
+            }
+
+            document.getElementById('recordsList').innerHTML = recordsHtml;
+        }
+
+        // ========== 頁面載入完成 ==========
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
