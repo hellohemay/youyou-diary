@@ -711,26 +711,40 @@
             const monthValue = document.getElementById('monthSelect').value;
             if (!monthValue) return;
 
-            const [year, month] = monthValue.split('-');
-            const startDate = new Date(year, parseInt(month) - 1, 1);
-            const endDate = new Date(year, parseInt(month), 0);
+            try {
+                const [year, month] = monthValue.split('-');
+                const startDate = new Date(year, parseInt(month) - 1, 1);
+                const endDate = new Date(year, parseInt(month), 0);
 
-            const recordKeys = await callRedisAPI('keys', 'record:*');
-            const records = [];
-            
-            if (recordKeys && Array.isArray(recordKeys)) {
-                for (let i = 0; i < recordKeys.length; i++) {
-                    const record = await callRedisAPI('get', recordKeys[i]);
-                    if (record) records.push(record);
+                const recordKeys = await callRedisAPI('keys', 'record:*');
+                const records = [];
+                
+                if (recordKeys && Array.isArray(recordKeys) && recordKeys.length > 0) {
+                    for (let i = 0; i < recordKeys.length; i++) {
+                        try {
+                            const record = await callRedisAPI('get', recordKeys[i]);
+                            if (record && record.date && record.feeling) {
+                                records.push(record);
+                            }
+                        } catch (e) {
+                            console.error('讀取記錄失敗:', e);
+                        }
+                    }
                 }
+
+                const monthRecords = records.filter(r => {
+                    try {
+                        const recordDate = new Date(r.date.split('/').reverse().join('-'));
+                        return recordDate >= startDate && recordDate <= endDate;
+                    } catch (e) {
+                        return false;
+                    }
+                });
+
+                displayMonthData(monthRecords, year, month);
+            } catch (error) {
+                console.error('月份查詢失敗:', error);
             }
-
-            const monthRecords = records.filter(r => {
-                const recordDate = new Date(r.date.split('/').reverse().join('-'));
-                return recordDate >= startDate && recordDate <= endDate;
-            });
-
-            displayMonthData(monthRecords, year, month);
         }
 
         function displayMonthData(records, year, month) {
@@ -778,25 +792,40 @@
                 return;
             }
 
-            const recordKeys = await callRedisAPI('keys', 'record:*');
-            const records = [];
-            
-            if (recordKeys && Array.isArray(recordKeys)) {
-                for (let i = 0; i < recordKeys.length; i++) {
-                    const record = await callRedisAPI('get', recordKeys[i]);
-                    if (record) records.push(record);
+            try {
+                const recordKeys = await callRedisAPI('keys', 'record:*');
+                const records = [];
+                
+                if (recordKeys && Array.isArray(recordKeys) && recordKeys.length > 0) {
+                    for (let i = 0; i < recordKeys.length; i++) {
+                        try {
+                            const record = await callRedisAPI('get', recordKeys[i]);
+                            if (record && record.date && record.feeling) {
+                                records.push(record);
+                            }
+                        } catch (e) {
+                            console.error('讀取單筆記錄失敗:', e);
+                        }
+                    }
                 }
+
+                const startDate = new Date(startStr);
+                const endDate = new Date(endStr);
+
+                const rangeRecords = records.filter(r => {
+                    try {
+                        const recordDate = new Date(r.date.split('/').reverse().join('-'));
+                        return recordDate >= startDate && recordDate <= endDate;
+                    } catch (e) {
+                        return false;
+                    }
+                });
+
+                displayRangeData(rangeRecords, startStr, endStr);
+            } catch (error) {
+                console.error('查詢失敗:', error);
+                alert('查詢失敗，請重試');
             }
-
-            const startDate = new Date(startStr);
-            const endDate = new Date(endStr);
-
-            const rangeRecords = records.filter(r => {
-                const recordDate = new Date(r.date.split('/').reverse().join('-'));
-                return recordDate >= startDate && recordDate <= endDate;
-            });
-
-            displayRangeData(rangeRecords, startStr, endStr);
         }
 
         function displayRangeData(records, startStr, endStr) {
