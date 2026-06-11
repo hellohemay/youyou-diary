@@ -679,7 +679,10 @@
             weekDates.forEach((date) => {
                 const dayRecords = recordsByDate[date] || [];
                 const dayFeedback = thisWeekFeedbacks.find(f => f.date === date);
-                const dayName = dayNames[new Date(date.split('/').reverse().join('-')).getDay()];
+                const parts = date.split('/');
+                const dateStr = `${parts[0]}-${String(parts[1]).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
+                const dayDate = new Date(dateStr);
+                const dayName = dayNames[dayDate.getDay()];
 
                 if (dayRecords.length > 0 || dayFeedback) {
                     analysisHTML += '<div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #0284c7;">';
@@ -734,7 +737,9 @@
 
                 const monthRecords = records.filter(r => {
                     try {
-                        const recordDate = new Date(r.date.split('/').reverse().join('-'));
+                        const parts = r.date.split('/');
+                        const dateStr = `${parts[0]}-${String(parts[1]).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
+                        const recordDate = new Date(dateStr);
                         return recordDate >= startDate && recordDate <= endDate;
                     } catch (e) {
                         return false;
@@ -814,7 +819,9 @@
 
                 const rangeRecords = records.filter(r => {
                     try {
-                        const recordDate = new Date(r.date.split('/').reverse().join('-'));
+                        const parts = r.date.split('/');
+                        const dateStr = `${parts[0]}-${String(parts[1]).padStart(2,'0')}-${String(parts[2]).padStart(2,'0')}`;
+                        const recordDate = new Date(dateStr);
                         return recordDate >= startDate && recordDate <= endDate;
                     } catch (e) {
                         return false;
