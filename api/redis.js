@@ -43,7 +43,6 @@ export default async function handler(req, res) {
                 body: valueStr
             });
             
-            const data = await response.json();
             return res.status(200).json({ success: true, result: true });
         }
         
@@ -59,16 +58,32 @@ export default async function handler(req, res) {
         }
         
         if (action === 'keys') {
-            const pattern = key;
-            const response = await fetch(`${REDIS_URL}/keys/${pattern}`, {
+            // 使用 SCAN 命令替代 KEYS（更有效率且更可靠）
+            const pattern = key || '*';
+            const response = await fetch(`${REDIS_URL}/scan/0?match=${pattern}&count=100`, {
                 headers: { 
                     Authorization: `Bearer ${REDIS_TOKEN}`
                 }
             });
             
             const data = await response.json();
-            const keys = Array.isArray(data.result) ? data.result : [];
-            return res.status(200).json({ success: true, result: keys });
+            
+            // SCAN 返回格式: [cursor, [keys]]
+            if (data.result && Array.isArray(data.result) && data.result.length > 1) {
+                const keys = data.result[1] || [];
+                return res.status(200).json({ success: true, result: keys });
+            }
+            
+            // 備用：直接使用 KEYS 命令
+            const keysResponse = await fetch(`${REDIS_URL}/keys/${pattern}`, {
+                headers: { 
+                    Authorization: `Bearer ${REDIS_TOKEN}`
+                }
+            });
+            
+            const keysData = await keysResponse.json();
+            const keysList = Array.isArray(keysData.result) ? keysData.result : [];
+            return res.status(200).json({ success: true, result: keysList });
         }
         
         return res.status(400).json({ error: 'Unknown action' });
