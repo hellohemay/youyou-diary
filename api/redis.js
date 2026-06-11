@@ -6,29 +6,27 @@ export default async function handler(req, res) {
     const REDIS_URL = process.env.KV_REST_API_URL;
     const REDIS_TOKEN = process.env.KV_REST_API_TOKEN;
 
+    if (!REDIS_URL || !REDIS_TOKEN) {
+        return res.status(500).json({ error: 'Redis credentials not configured' });
+    }
+
     const { action, key, value } = req.body;
 
     try {
         if (action === 'get') {
-            const response = await fetch(`${REDIS_URL}/get/${key}`, {
+            const response = await fetch(`${REDIS_URL}/get/${encodeURIComponent(key)}`, {
                 headers: { 
-                    Authorization: `Bearer ${REDIS_TOKEN}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${REDIS_TOKEN}`
                 }
             });
             const data = await response.json();
             
             if (data.result) {
                 try {
-                    return res.status(200).json({ 
-                        success: true, 
-                        result: JSON.parse(data.result) 
-                    });
+                    const parsed = JSON.parse(data.result);
+                    return res.status(200).json({ success: true, result: parsed });
                 } catch (e) {
-                    return res.status(200).json({ 
-                        success: true, 
-                        result: data.result 
-                    });
+                    return res.status(200).json({ success: true, result: data.result });
                 }
             }
             return res.status(200).json({ success: true, result: null });
@@ -36,29 +34,27 @@ export default async function handler(req, res) {
         
         if (action === 'set') {
             const valueStr = JSON.stringify(value);
-            const response = await fetch(`${REDIS_URL}/set/${key}`, {
+            const response = await fetch(`${REDIS_URL}/set/${encodeURIComponent(key)}`, {
                 method: 'POST',
                 headers: { 
                     Authorization: `Bearer ${REDIS_TOKEN}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ value: valueStr })
+                body: valueStr
             });
             
             const data = await response.json();
-            return res.status(200).json({ success: true, result: data.result === 'OK' });
+            return res.status(200).json({ success: true, result: true });
         }
         
         if (action === 'del') {
-            const response = await fetch(`${REDIS_URL}/del/${key}`, {
-                method: 'DELETE',
+            const response = await fetch(`${REDIS_URL}/del/${encodeURIComponent(key)}`, {
+                method: 'POST',
                 headers: { 
-                    Authorization: `Bearer ${REDIS_TOKEN}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${REDIS_TOKEN}`
                 }
             });
             
-            const data = await response.json();
             return res.status(200).json({ success: true, result: true });
         }
         
@@ -66,8 +62,7 @@ export default async function handler(req, res) {
             const pattern = key;
             const response = await fetch(`${REDIS_URL}/keys/${pattern}`, {
                 headers: { 
-                    Authorization: `Bearer ${REDIS_TOKEN}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${REDIS_TOKEN}`
                 }
             });
             
